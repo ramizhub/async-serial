@@ -1,0 +1,54 @@
+Async serial port with a UDP interface
+
+Your goal is to code an asynchronous serial port with a TCP network interface using C or C++. The TCP interface must bind to port 2567 on all network interfaces.
+
+The applicant must present the application and describe the program's algorithms and core data structures.
+
+Requirements:
+
+1a. The application must start from the command line and accept a serial port name as a command-line argument.
+Example: "application.exe COM1" or "./application /dev/ttyUSB0", or "./application --serial-port /dev/ttyS0"
+
+1b. Allowed OS environments are Windows and GNU/Linux.
+All open-source compilers are allowed on Linux and Windows. Additionally, Windows users can compile with MS Visual Studio.
+If you decide to use high-level libraries or components for asynchronous serial port IO, they must be open-source.
+
+2. The network interface must accept the incoming traffic and acknowledge the correct commands with "OK" followed with \r\n. (0x0D 0x0A in hex).
+
+Correct commands must end with "\r\n". The maximum length of the command is 128 bytes, excluding the "\r\n".
+
+Incorrect commands are replied with "-PROTOCOL ERROR\r\n".
+Commands of 0 lengths or greater than 128 bytes (excluding the \r\n) are considered incorrect.
+
+Correct commands are acknowledged with "+ACCEPTED\r\n"
+
+3a. Commands accepted by the network interface must be sent to a serial port configured with a baud rate of 9600 bps, no parity, one start bit, eight data bits, and one stop bit.
+
+3b. Any data received from the serial port must be available to all connected clients with a "+DATA RECEIVED\r\n" prefix and "+DATA END\r\n" postfix.
+The data received from the serial port is buffered until the "\r\n" is received or the read is timing out after one second.
+When writing into the serial port, the time skew between the command acknowledgment and the beginning of the write to the serial port must not exceed 200 milliseconds when a single client writes into the port. If multiple clients are writing into the port, their commands must be queued. The application must read the data coming from the serial port in between the writes. The time interval between the completed read call (from serial) and subsequent write must not exceed 200 milliseconds.
+
+4. All the data received on the TCP interface must be flushed into the text file "logfile.txt".
+Each log line must be prefixed with a timestamp in the following format:
+"YYYY-mm-DD    hh:MM:ss.SSS".
+YYYY: year
+mm: month (01 - 12)
+DD: day of month (01-31)
+hh: the hour of day (00 -23)
+MM: a minute of the hour (00 - 59)
+ss: second of minute  (00 - 59)
+SSS: millisecond of the second (000 - 999)
+
+The next section is a client's IP address and port, followed by the data payload. IP address notion allows both IPv4 and IPv6.
+
+Incoming data from the TCP socket must be prefixed with IN, whereas data from the serial port to the client must be prefixed with OUT.
+
+The complete template for the log lines looks like:
+YYYY-mm-DD hh:MM:ss.SSS [clients ip address: port] [IN or OUT] [data]
+
+---
+
+
+Testing setup example:
+
+Application<--->COM3<---->NULL MODEM EMULATOR<---->COM4<---->Any serial port terminal (terraterm/real term/putty serial/moserial/e.t.c..) 9600-N-1
