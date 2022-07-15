@@ -1,5 +1,4 @@
 #ifdef __linux__
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -198,10 +197,15 @@ void get_sys_time(char * date_string)
 
 
 
-int fill_logfile(struct sockaddr_in * client, char * direction, char * data)
+int fill_logfile(struct sockaddr_in6 * client, char * direction, char * data)
 {
     char date[STANDARD_BUFF_SIZE]    = {0};
     char log[STANDARD_BUFF_SIZE * 2] = {0};
+    char ip_string[INET6_ADDRSTRLEN] = {0};
+    if(inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)client)->sin6_addr), ip_string, INET6_ADDRSTRLEN) == NULL) {
+        perror("inet_ntop() function : ");
+        return -1;
+    }
     get_sys_time(date);
 
     int leftb_count      = 0;
@@ -216,7 +220,7 @@ int fill_logfile(struct sockaddr_in * client, char * direction, char * data)
     int fd = fileno(fp);
 
     /* organize a string for a logfile */
-    sprintf(log, "%s [%s: %d] [%s] %s\n", date, inet_ntoa(client->sin_addr), client->sin_port, direction, data);
+    sprintf(log, "%s [%s: %d] [%s] %s\n", date, ip_string, client->sin6_port, direction, data);
     
     leftb_count = sizeof(char) * strlen(log);
     do {
@@ -287,18 +291,18 @@ int main(int argc, char * argv[])
     if(port_config(port_desc, BAUDRATE) == -1)
         exit(EXIT_FAILURE);
 
-    struct sockaddr_in server_addr;
-    struct sockaddr_in client_addr;
+    struct sockaddr_in6 server_addr;
+    struct sockaddr_in6 client_addr;
     
     int server_fd;
     int client_fd;
-    int sockaddr_len                = sizeof(struct sockaddr_in);
+    int sockaddr_len                = sizeof(struct sockaddr_in6);
     int req_bytes_count             = 0;
-    char buffer[STANDARD_BUFF_SIZE] = {0};
     char command_name[19]           = {0};
+    char buffer[STANDARD_BUFF_SIZE] = {0};
 
     /*
-    *   AF_INET6        compatible with IPv4 internet protocol
+    *   AF_INET6        compatible with IPv4 and IPv6 internet protocol
     *   SOCK_STREAM     TCP socket
     *   0               default TCP protocol
     */
@@ -308,13 +312,13 @@ int main(int argc, char * argv[])
         exit(EXIT_FAILURE);
     }
     
-    server_addr.sin_family      = AF_INET;
+    server_addr.sin6_family      = AF_INET6;
 
     /* htons() converts unsigned short integer from host byte order to network byte order */
-    server_addr.sin_port        = htons(STANDARD_PORT);
+    server_addr.sin6_port        = htons(STANDARD_PORT);
 
     /* connect to my local machine */
-    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin6_addr        = in6addr_any;
     
 
     if(bind(server_fd, (struct sockaddr *)&server_addr, sockaddr_len) == -1) {
@@ -380,5 +384,4 @@ int main(int argc, char * argv[])
         exit(EXIT_FAILURE);
     }
 }
-
 #endif
