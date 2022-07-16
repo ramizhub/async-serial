@@ -183,7 +183,6 @@ void make_command(char * buffer, char * command)
     }
     command[index]     = '\r';
     command[index + 1] = '\n';
-    command[index + 2] = '\0';
 }
 
 
@@ -265,7 +264,7 @@ int read_from_port(int fd, char * buffer)
 {
     int processedb_count = 0;
     while(ON) {
-        usleep(1000);
+        usleep(200);
         if(waitfl = false) {
             processedb_count         = read(fd, buffer, STANDARD_BUFF_SIZE);
             buffer[processedb_count] = '\0';
@@ -298,7 +297,7 @@ int main(int argc, char * argv[])
     int client_fd;
     int sockaddr_len                = sizeof(struct sockaddr_in6);
     int req_bytes_count             = 0;
-    char command_name[19]           = {0};
+    char command_name[18]           = {0};
     char buffer[STANDARD_BUFF_SIZE] = {0};
 
     /*
@@ -354,8 +353,7 @@ int main(int argc, char * argv[])
                         exit(EXIT_FAILURE);
                     memset(buffer, 0, sizeof(buffer));
                     
-                    if(read_from_port(port_desc, buffer) == -1)
-                        exit(EXIT_FAILURE);
+                    read_from_port(port_desc, buffer);
                     
                     if(fill_logfile(&client_addr, "OUT", buffer) == -1)
                         exit(EXIT_FAILURE);
