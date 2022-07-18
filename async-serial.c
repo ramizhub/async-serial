@@ -264,7 +264,6 @@ int read_from_port(int fd, char * buffer)
 {
     int processedb_count = 0;
     while(ON) {
-        usleep(200);
         if(waitfl = false) {
             processedb_count         = read(fd, buffer, STANDARD_BUFF_SIZE);
             buffer[processedb_count] = '\0';
