@@ -370,12 +370,12 @@ int main(int argc, char * argv[])
             }
             memset(buffer,       0, sizeof(buffer));
             memset(command_name, 0, sizeof(command_name));
-        }
+        } /* while(req_bytes_count) */
         if(close(client_fd) == -1) {
             perror("close() function (client fd): ");
             exit(EXIT_FAILURE);
         }
-    }
+    } /* while(ON) */
     if(close(server_fd) == -1) {
         perror("close() function (server fd): ");
         exit(EXIT_FAILURE);
